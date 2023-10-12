@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1 , user-scalable=no">
+    <title>IP地址管理平台 v0.1_Beta</title>
+
+    <!--IMPORT CSS STYLE-->
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/fullPage/jquery.fullPage.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/bootstrap-3.3.0/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/material-design-iconic-font-2.2.0/css/material-design-iconic-font.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/waves-0.7.5/waves.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='plugins/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+    <style>
+        /** skins **/
+        #zheng-upms-server #header {background: #428bca;}
+        #zheng-upms-server .content_tab{background: #428bca;}
+    </style>
+
+    {% block css %}{% endblock %}
+</head>
+
+<body>
+    <header id="header">
+        <ul id="menu">
+            <li id="logo" class="hidden-xs">
+                <span id="system_title"></span>
+            </li>
+        </ul>
+    </header>
+    <section id="main">
+        <!-- 左侧导航区 -->
+        <aside id="sidebar">
+            <!-- 菜单区 -->
+            <ul class="main-menu">
+                <li>
+                    <a class="waves-effect" href="javascript:Tab.addTab('首页', 'home');"></i> 首页</a>
+                </li>
+                <li class="sub-menu system_menus system_1 0">
+                    <a class="waves-effect" href="javascript:;">IP地址使用</a>
+                    <ul>
+                        <li><a class="waves-effect" href="javascript:Tab.addTab('IP地址表', 'ipshow');">IP地址表</a></li>
+                        <li><a class="waves-effect" href="javascript:Tab.addTab('分组', 'ipgroup');">分组</a></li>
+                    </ul>
+                </li>
+
+                <li class="sub-menu system_menus system_1 3">
+                    <a class="waves-effect" href="javascript:;">设置</a>
+                    <ul>
+                        <li><a class="waves-effect" href="javascript:Tab.addTab('设置', 'settings');">设置</a></li>
+                        <li><a class="waves-effect" href="javascript:Tab.addTab('数据库', '/manage/user/index2');">数据库</a></li>
+                        <li><a class="waves-effect" href="javascript:Tab.addTab('关于', 'about');">关于</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- /菜单区 -->
+        </aside>
+        <!-- /左侧导航区 -->
+        <section id="content">
+            <div class="content_tab">
+                <div class="tab_left">
+                    <a class="waves-effect waves-light" href="javascript:;"><i class="zmdi zmdi-chevron-left"></i></a>
+                </div>
+                <div class="tab_right">
+                    <a class="waves-effect waves-light" href="javascript:;"><i class="zmdi zmdi-chevron-right"></i></a>
+                </div>
+                <ul id="tabs" class="tabs">
+                    <li id="tab_home" data-index="home" data-closeable="false" class="cur">
+                        <span class="waves-effect waves-light">首页</span>
+                    </li>
+                </ul>
+            </div>
+            {% block container %}
+            <div class="container">
+                {% block content_main %}{% endblock %}
+            </div>
+            {% endblock container %}-
+        </section>
+    </section>
+    <footer id="footer"></footer>
+
+<script src="{{ url_for('static', filename='plugins/jquery.1.12.4.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/bootstrap-3.3.0/js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='Bootstrap-3.3.7/js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/waves-0.7.5/waves.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.concat.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/BootstrapMenu.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/device.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/fullPage/jquery.fullPage.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/fullPage/jquery.jdirk.min.js') }}"></script>
+<script src="{{ url_for('static', filename='plugins/jquery.cookie.js') }}"></script>
+
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+<script>
+    $(function() {
+        new WOW().init();
+    })
+
+</script>
+<script>
+    $(document).ready(function() {
+        $("img.lazy").lazyload({
+            effect: "fadeIn"
+        });
+    });
+
+</script>
+{% block js %}{% endblock %}
+</body>
+</html>

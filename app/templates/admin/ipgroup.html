@@ -1,0 +1,659 @@
+{% block container %}
+<div id="iframe_home" class="iframe cur">
+    <!-- 目录树 -->
+	<div class="tree" id="tree">
+		{% for i in data %}
+		<details>
+			<summary>
+				<span class="tree-top">{{ i.name }}</span>
+			</summary>
+			{% for x in i['networks'] %}
+			<details>
+				<summary>
+					<span id="group-{{ x.id }}" class="tree-item" data-id="{{ x.name }}">{{ x.name }}</span>
+				</summary>
+			</details>
+			{% endfor %}
+		</details>
+		{% endfor %}
+	</div>
+    <!-- 右侧内容 -->
+    <div class="container" style="width: auto; overflow-y: auto;height: 800px;">
+        <div class="row">
+            <!-- echarts饼图 -->
+            <div class="col-md-12">
+                <div id="device_health" style=" width: 512px; height:512px;"></div>
+            </div>
+            <!-- 方块表 -->
+            <div class="col-md-12">
+                <div id="matrix" style="padding-bottom: 10px;"></div>
+            </div>
+            <div class="col-md-12">
+                    <div id="result-container3">
+                        <!-- dataTables 表格 -->
+	                    <table id="ip_table" class="display" cellspacing="0" width="100%"></table>
+                        <div class="modal fade" id="addModal" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                  <h4 class="modal-title">添加</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="addForm">
+                                        <div class="form-group">
+                                            <label for="add_ip">IP地址</label>
+                                            <div class="form-inline">
+                                                <label class="sr-only" for="add_ip"></label>
+                                                <input type="text" class="form-control" id="add_ip" placeholder="IP地址">
+                                                <label for="add_mask">/</label>
+                                                <input type="text" class="form-control" id="add_mask" placeholder="填0-32或255.255.255.x">
+                                            </div>							  
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add_mac_add">MAC地址</label>
+                                            <input type="text" class="form-control" id="add_mac_add" placeholder="格式:1111-2222-3333">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add_network">网段</label>
+                                            <input type="text" class="form-control" id="add_network" placeholder="无需填写，自动判断" disabled>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add_group_name">分组</label>
+                                            <input type="text" class="form-control" id="add_group_name" placeholder="无需填写，属于当前分组" disabled>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add_desc">描述</label>
+                                            <input type="text" class="form-control" id="add_desc" placeholder="">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add_user">使用人</label>
+                                            <input type="text" class="form-control" id="add_user" placeholder="">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add_available">在线状态</label>
+                                            <input type="text" class="form-control" id="add_available" placeholder="无需填写，后台自动探测" disabled>
+                                        </div>
+                                    </form>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                        <button type="button" class="btn btn-primary" id="btnConfirmAdd">确定</button>
+                                    </div>
+                                </div>
+                              </div><!-- /.modal-content -->
+                            </div><!-- /.modal-dialog -->
+                          </div><!-- /.modal -->
+                        </div>
+                    
+                        <div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+                            <div class="modal-dialog" role="document">
+                              <div class="modal-content">
+                                <div class="modal-header">
+                                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                  <h4 class="modal-title">编辑</h4>
+                                </div>
+                                <div class="modal-body">
+                                  <form id="editForm">
+                                    <div class="form-group">
+                                        <label for="edit_ip">IP地址</label>
+                                        <div class="form-inline">
+                                            <label class="sr-only" for="edit_ip"></label>
+                                            <input type="text" class="form-control" id="edit_ip" name="ip" placeholder="IP地址">
+                                            <label for="edit_mask">/</label>
+                                            <input type="text" class="form-control" id="edit_mask" name="mask" placeholder="填0-32或255.255.255.x">
+                                        </div>	
+                                    </div>
+                                    <div class="form-group">
+                                      <label for="edit_mac_add">MAC地址</label>
+                                      <input type="text" class="form-control" id="edit_mac_add" name="mac_add" placeholder="格式:1111-2222-3333">
+                                    </div>
+                                    <div class="form-group">
+                                      <label for="edit_network">网段</label>
+                                      <input type="text" class="form-control" id="edit_network" name="network" placeholder="无需填写，自动判断" disabled>
+                                    </div>
+                                    <div class="form-group">
+                                      <label for="edit_group_name">分组</label>
+                                      <input type="text" class="form-control" id="edit_group_name" name="group_name" placeholder="不填写属于默认组，不存在则创建新的分组">
+                                    </div>
+                                    <div class="form-group">
+                                      <label for="edit_desc">描述</label>
+                                      <input type="text" class="form-control" id="edit_desc" name="desc" placeholder="">
+                                    </div>
+                                    <div class="form-group">
+                                      <label for="edit_user">使用人</label>
+                                      <input type="text" class="form-control" id="edit_user" name="user" placeholder="">
+                                    </div>
+                                    <input type="hidden" id="id" name="id">
+                                  </form>
+                                </div>
+                                <div class="modal-footer">
+                                  <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                                  <button type="button" class="btn btn-primary" id="editConfirmBtn">保存更改</button>
+                                </div>
+                              </div>
+                            </div>
+                        </div>	  
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>		
+</div>
+{% endblock %}
+{% block css %}
+<!-- 方块表样式 -->
+<style>
+    .block {
+        width: 32px;
+        height: 32px;
+        display: inline-block;
+        text-align: center;
+        font-size: 15px;
+        margin: 2px;
+        background-color: red;
+    }
+    
+    .green {
+        background-color: #03C096;
+    }
+    
+    .orange {
+        background-color: #FD740B;
+    }
+    
+    .gainsboro {
+        background-color: gainsboro;
+    }
+</style>
+<!-- sweetalert -->
+<link rel="stylesheet" href="{{ url_for('static', filename='sweetalert/sweetalert.css') }}">
+<script src="{{ url_for('static', filename='sweetalert/sweetalert.min.js') }}"></script>
+<!-- DataTables-1.12.1 -->
+<script type="text/javascript" src="{{ url_for('static', filename='jQuery-3.6.0/jquery-3.6.0.min.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='DataTables-1.12.1/css/jquery.dataTables.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='DataTables-1.12.1/css/dataTables.bootstrap.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='DataTables-1.12.1/js/jquery.dataTables.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='DataTables-1.12.1/js/dataTables.bootstrap.js') }}"></script>
+<!-- DataTables-1.12.1 Extended Plugs -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='Buttons-2.2.3/css/buttons.dataTables.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='Buttons-2.2.3/js/dataTables.buttons.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='Buttons-2.2.3/js/buttons.bootstrap.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='Buttons-2.2.3/js/buttons.html5.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='JSZip-2.5.0/jszip.js') }}"></script>
+<!-- Bootstrap-3.3.7 jQuery-3.6.0 -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='Bootstrap-3.3.7/css/bootstrap.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='Bootstrap-3.3.7/js/bootstrap.js') }}"></script>
+<!-- DataTables-1.12.1 RowGroup Plugin -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='RowGroup-1.4.0/css/rowGroup.dataTables.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='RowGroup-1.4.0/js/dataTables.rowGroup.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='Bootstrap-3.3.7/css/bootstrap.min.css') }}">
+<!-- 目录树 CSS -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/tree-css.css') }}">
+<!-- moment.min.js -->
+<script type="text/javascript" src="{{ url_for('static', filename='js/moment.min.js') }}"></script>
+{% endblock %}
+{% block js %}
+<!-- echarts-4.3.0 饼图 -->
+  <script   src="{{ url_for('static', filename='echarts/echarts.min.js') }}"></script>
+<script>
+
+    function initEcharts(data) {
+        // 初始化 echarts 实例
+        var myChart = echarts.init(document.getElementById('device_health'));
+
+        myChart.setOption({
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                left: '1%',
+				top: '70%',
+            },
+            title: {
+                text: '在线：' + data.true_count,
+                x: 'center',
+                y: 'center',
+                textStyle: {
+                    fontWeight: 'normal',
+                    fontSize: 25,
+                    color: '#0059b3'
+                }, // 标题
+                subtextStyle: {
+                    fontWeight: 'normal',
+                    fontSize: 28,
+                    color: '#0059b3'
+                } // 副标题
+            },
+            series: [{
+                name: 'IP地址使用情况',
+                type: 'pie', // 设置图表类型为饼图
+                radius: ['36%', '52%'], // 饼图的半径，外半径为可视区尺寸（容器高宽中较小一项）的 55% 长度。
+                label: {
+                    position: 'outside',
+                    formatter: '{b}: {c}\n({d}%)',
+                    fontSize: 15
+                },
+                color: ['#03C096', '#FD740B', '#dcdcdc'],
+                data: [ // 数据数组，name 为数据项名称，value 为数据项值
+                    { name: '在线', value: data.true_count },
+                    { name: '不在线', value: data.false_count },
+                    { name: '未使用', value: 254 - data.len_count },
+                ]
+            }]
+        })
+    }
+
+    function generateBlocks(data) {
+        var matrix = document.getElementById('matrix');
+        matrix.innerHTML = ''; // 清空
+
+        for (var i = 1; i <= 255; i++) {
+            var block = document.createElement('div');
+            block.classList.add('block');
+            block.innerText = i;
+
+            var found = false;
+            for (var j = 0; j < data.length; j++) {
+                var lastDigits = data[j].ip.split('.').pop();
+                if (parseInt(lastDigits) === i && data[j].available) {
+                    block.classList.add('green');
+                    found = true;
+                    break;
+                } else if (parseInt(lastDigits) === i && !data[j].available) {
+                    block.classList.add('orange');
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                block.classList.add('gainsboro');
+            }
+
+            matrix.appendChild(block);
+        }
+    }
+
+    // 编辑行数据--给DataTable编辑按钮的调用函数
+    var row_edit = function() {
+        var selectedRowsData = table.rows('.selected').data();
+        if (selectedRowsData.length === 1) {
+            var row = selectedRowsData[0];
+            // 根据你的需求，执行编辑操作
+            //在此处完成弹出模态框渲染数据行和填写数据提交功能
+            editRowData(row);
+        } else {
+            swal("No row selected or more selected!", "Please select one row only.", "warning");
+        }
+    };
+
+    // 编辑行数据--数据行渲染到表单输入框
+    var editRowData = function(row) {
+        $('#edit_ip').val(row.ip);
+        $('#edit_mask').val(row.mask);
+        $('#edit_mac_add').val(row.mac_add);
+        // $('#edit_network').val(row.network);
+        $('#edit_group_name').val(row.group_name);
+        $('#edit_desc').val(row.desc);
+        $('#edit_user').val(row.user);
+        $('#id').val(row.id);
+        $('#editModal').modal('show');
+    };
+    
+    // 编辑行数据--点击“保持更改”按钮
+    $('#editConfirmBtn').on('click', function() {
+        var formData = {};
+        $('#editForm').serializeArray().forEach(function(item) {
+            formData[item.name] = item.value;
+        });
+
+        $.ajax({
+            url: '/admin/edit',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(result) {
+                if (result.status_code == 2001) {
+                    // 更新成功的处理逻辑...
+                    swal("Row update was successful!", result.message + '  Closing in 3 seconds.', "success");
+                    //3秒后自动关闭提示信息
+                    setTimeout(swal.close, 3000)
+                    // 隐藏模态框
+                    $('#editModal').modal('hide');
+                    //table.ajax.reload();
+                    } else {
+                    // 添加失败的处理逻辑...
+                    swal("Failed to update data!", result.message, "warning");
+                    }
+            },
+            error: function(xhr, status, error) {
+                swal("Error editing data!", error, "error");
+            }
+        });
+    });
+
+    // 添加数据行--给DataTable添加按钮的调用函数
+    var row_add = function(group_name) {
+        // 将当前组名渲染到add_group_name的input框
+        $('#add_group_name').val(group_name);
+        // 添加数据行--弹出模态框
+        $('#addModal').modal('show');
+        // 添加数据行--解除之前绑定的点击事件
+        $('#btnConfirmAdd').off('click');
+        // 添加数据行--点击“确认”按钮
+        $('#btnConfirmAdd').click(function(event) {
+            event.preventDefault();
+            var data = {};
+            // 获取表单值
+            data.ip = $('#add_ip').val();
+            data.mask = $('#add_mask').val();
+            data.mac_add = $('#add_mac_add').val();
+            data.network = $('#add_network').val();
+            data.group_name = $('#add_group_name').val();
+            data.desc = $('#add_desc').val();
+            data.user = $('#add_user').val();
+            data.available = $('#add_available').val();
+
+            // 向服务器发送请求
+            $.ajax({
+            url: '/admin/add',
+            type: 'POST',
+            dataType: 'json',
+            data: JSON.stringify(data),
+            contentType: 'application/json;charset=UTF-8',
+            success: function(result) {
+                if (result.status_code == 2001) {
+                // 添加成功的处理逻辑...
+                swal("Success", result.message + '  Closing in 3 seconds.', "success");
+                //3秒后自动关闭提示信息
+                setTimeout(swal.close, 3000)
+                // 隐藏模态框
+                $('#addModal').modal('hide');
+                // 清空表单值
+                $('#addForm')[0].reset();
+                } else {
+                // 添加失败的处理逻辑...
+                swal("Failed to add data!", result.message, "warning");
+                }
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                // 错误处理逻辑...
+                swal("Error adding data!", errorThrown, "error");
+            }
+            });
+        });
+    };
+
+    // 删除选中行--给DataTable删除按钮的调用函数
+    var row_delete = function() {
+        var selectedRowsData = table.rows('.selected').data();
+        var id_list = []; // 存储选中行的 ID
+    
+        selectedRowsData.each(function (row) {
+        var id = parseInt(row.id); // 假设选中行的 ID 存储在 row 对象的 id 属性中，强制转换int类型
+        id_list.push(id); // 将选中行的 ID 存入 id_list 数组中
+        });
+    
+        if (id_list.length === 0) { // 如果未选择任何行，则提示用户进行选择
+        swal("No row selected!", "Please select at least one row.", "warning");
+        return;
+        }
+    
+        // 删除选中行--弹出 SweetAlert 确认弹窗
+        swal({
+        title: "Are you sure?",
+        text: "Your will not be able to recover that!",
+        type: "warning",
+        showCancelButton: true,  // 是否显示取消按钮
+        confirmButtonClass: "btn-danger",  // 确认按钮的样式类
+        confirmButtonText: "Yes, delete it!",  // 确认按钮文本
+        cancelButtonText: "Cancel",  // 取消按钮文本
+        closeOnConfirm: false,  // 点击确认按钮不关闭弹框
+        showLoaderOnConfirm: true  // 显示正在删除的动画效果
+        },
+        function(){
+        $.ajax({
+            url: "/admin/delete",
+            type: "post",
+            data: JSON.stringify({ ids: id_list }), // 将选中行的 ID 以 JSON 格式发送到后台
+            contentType: 'application/json',
+            success: function (data) {
+            if (data.status_code === 2001) {
+                swal("Deleted!", "Data has been deleted." + '  Closing in 3 seconds.', "success");
+                //3秒后自动关闭提示信息
+                setTimeout(swal.close, 3000)
+                //table.ajax.reload();
+            } else {
+                swal("Error!", "An error occurred.", "error")
+            }
+            }
+        })
+        });
+    };	
+
+    // 数据行的选中
+    $("#ip_table").on("click", "tbody tr", function () {
+        $(this).toggleClass("selected");
+        });
+    
+    // 被点击事件调用初始化DataTable函数
+    function initializeDataTable(data, requestData) {
+        var nowTime = moment().format("YYYY-MM-DD_HH-mm"); // 获取当前时间
+      
+        // DataTable初始化
+        $(document).ready(function () {
+          table = $("#ip_table").DataTable({
+            pageLength: 15, // 每页显示15条数据
+            dom: "Bfrtip",
+            data: data,
+            buttons: [
+              {
+                text: "添加",
+                //action: row_add,
+                action: function (e, dt, node, config) {
+                    row_add(data[0].group_name);
+                    // 如果table已经被初始化，则销毁它并释放资源
+                    if ($.fn.DataTable.isDataTable("#ip_table")) {
+                        $("#ip_table").DataTable().destroy();
+                    }
+
+                    sendPostRequest('/admin/ipgroupdetail', requestData, function(response) {
+                        // 处理成功响应
+                        initializeDataTable(response.data, requestData);
+                    }, function(xhr, textStatus, errorThrown) {
+                        // 处理错误响应
+                        swal("Failed!", errorThrown, "error");
+                    });
+                },
+              },
+              {
+                text: "编辑选中行",
+                //action: row_edit,
+                action: function (e, dt, node, config) {
+                    row_edit();
+                    // 如果table已经被初始化，则销毁它并释放资源
+                    if ($.fn.DataTable.isDataTable("#ip_table")) {
+                        $("#ip_table").DataTable().destroy();
+                    }
+
+                    sendPostRequest('/admin/ipgroupdetail', requestData, function(response) {
+                        // 处理成功响应
+                        initializeDataTable(response.data, requestData);
+                    }, function(xhr, textStatus, errorThrown) {
+                        // 处理错误响应
+                        swal("Failed!", errorThrown, "error");
+                    });
+                },
+              },
+              {
+                text: "删除选中行",
+                //action: row_delete,
+                action: function (e, dt, node, config) {
+                    row_delete();
+                    // 如果table已经被初始化，则销毁它并释放资源
+                    if ($.fn.DataTable.isDataTable("#ip_table")) {
+                        $("#ip_table").DataTable().destroy();
+                    }
+
+                    sendPostRequest('/admin/ipgroupdetail', requestData, function(response) {
+                        // 处理成功响应
+                        initializeDataTable(response.data, requestData);
+                    }, function(xhr, textStatus, errorThrown) {
+                        // 处理错误响应
+                        swal("Failed!", errorThrown, "error");
+                    });
+                },
+              },
+              {
+                extend: "excel",
+                title: "数据导出-" + nowTime,
+                text: "导出",
+                filename: "IP地址使用情况表_" + nowTime,
+                exportOptions: {
+                  columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+                },
+              },
+              {
+                text: "刷新",
+                action: function (e, dt, node, config) {
+                    //dt.ajax.reload();
+                    // 如果table已经被初始化，则销毁它并释放资源
+                    if ($.fn.DataTable.isDataTable("#ip_table")) {
+                        $("#ip_table").DataTable().destroy();
+                    }
+
+                    sendPostRequest('/admin/ipgroupdetail', requestData, function(response) {
+                        // 处理成功响应
+                        initializeDataTable(response.data, requestData);
+                    }, function(xhr, textStatus, errorThrown) {
+                        // 处理错误响应
+                        swal("Failed!", errorThrown, "error");
+                    });
+                },
+              },
+            ],
+            columns: [
+              {
+                title: "编号",
+                data: null,
+                render: function (data, type, row, meta) {
+                  return meta.row + 1; // 序号从1开始
+                },
+              },
+              { title: "ID", data: "id" },
+              { title: "IP地址", data: "ip" },
+              { title: "子网掩码", data: "mask" },
+              { title: "MAC地址", data: "mac_add" },
+              { title: "网络", data: "network" },
+              { title: "组别", data: "group_name" },
+              { title: "描述", data: "desc" },
+              { title: "用户", data: "user" },
+              {
+                title: "在线状态",
+                data: null,
+                render: function (data, type, row) {
+                  if (row.available) {
+                    return "<span class='label label-success'>在线</span>";
+                  } else {
+                    return "<span class='label label-warning'>离线</span>";
+                  }
+                },
+              },
+              {
+                title: "创建时间",
+                data: "created_at",
+                render: function (data, type, row) {
+                  var datetime = moment.utc(data).local();
+                  return type === "display" || type === "filter"
+                    ? datetime.format("YYYY-MM-DD HH:mm:ss") // 用于渲染在单元格
+                    : data; // 用于被搜索
+                },
+              },
+              {
+                title: "更新时间",
+                data: "updated_at",
+                render: function (data, type, row) {
+                  var datetime = moment.utc(data).local();
+                  return type === "display" || type === "filter"
+                    ? datetime.format("YYYY-MM-DD HH:mm:ss") // 用于渲染在单元格
+                    : data; // 用于被搜索
+                },
+              },
+            ],
+            columnDefs: [{ visible: false, targets: [1] }], // 隐藏第二列
+          });
+
+          
+        });
+    }
+
+    // ajax post 请求函数封装
+    function sendPostRequest(url, requestData, successCallback, errorCallback) {
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: JSON.stringify(requestData),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function(response) {
+                if (successCallback && typeof successCallback === 'function') {
+                    successCallback(response);
+                }
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                if (errorCallback && typeof errorCallback === 'function') {
+                    errorCallback(xhr, textStatus, errorThrown);
+                }
+            }
+        });
+    }
+    
+	// 获取所有具有 class 名称为 'tree-item' 的元素
+    var treeItems = document.getElementsByClassName('tree-item');
+
+    // 遍历每个元素并绑定点击事件
+    for (var i = 0; i < treeItems.length; i++) {
+        var treeItem = treeItems[i];
+        $(treeItem).click(function() {
+            var itemId = $(this).attr('data-id');
+            var requestData = { "network": itemId };
+            // 如果table已经被初始化，则销毁它并释放资源
+            if ($.fn.DataTable.isDataTable("#ip_table")) {
+                $("#ip_table").DataTable().destroy();
+            }
+            
+            // 发送ajax POST
+            sendPostRequest('/admin/ipgroupdetail', requestData, function(response) {
+                // 处理成功响应
+                initializeDataTable(response.data, requestData);
+            }, function(xhr, textStatus, errorThrown) {
+                // 处理错误响应
+                swal("Failed!", errorThrown, "error");
+            });
+
+            // 发送GET请求
+            $.ajax({
+                url: '/admin/ipgroupdetail',
+                type: 'GET',
+                data: requestData,
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response) {
+                    // Echarts渲染
+                    initEcharts(response.count);
+                    // 方块渲染
+                    generateBlocks(response.group_items.data);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    // 处理错误响应
+                    swal("Failed!", errorThrown, "error");
+                }
+
+                
+            });   
+        });
+    }
+
+</script>
+{% endblock %}

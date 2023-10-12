@@ -1,0 +1,174 @@
+{% block css %}
+<script type="text/javascript" src="{{ url_for('static', filename='jQuery-3.6.0/jquery-3.6.0.min.js') }}"></script>
+<!-- sweetalert -->
+<link rel="stylesheet" href="{{ url_for('static', filename='sweetalert/sweetalert.css') }}">
+<script src="{{ url_for('static', filename='sweetalert/sweetalert.min.js') }}"></script>
+<!-- Bootstrap-3.3.7 jQuery-3.6.0 -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='Bootstrap-3.3.7/css/bootstrap.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='Bootstrap-3.3.7/js/bootstrap.js') }}"></script>
+<!-- moment.min.js -->
+<script type="text/javascript" src="{{ url_for('static', filename='js/moment.min.js') }}"></script>
+{% endblock %}
+{% block container %}
+	<div class="content_main">
+		<div id="iframe_home" class="iframe cur" style="padding-left: 18px; width: 768px;">
+			<div class="row">
+				<div class="col-md-12">
+					<h2>设置 </h2>
+					<h3>分组修改</h3>
+					<form id="group_submit" action="{{ url_for('admin.join_group') }}" class="form-inline" method="post">
+						<div class="form-group">
+							<label for="network">网段：</label>
+							<input type="text" class="form-control" name="network" id="network" placeholder="x.x.x.x/x">
+						</div>
+						<div class="form-group">
+							<label for="group">加入分组</label>
+							<input type="text" class="form-control" name="group" id="group" placeholder="分组名称，不存在自动创建">
+						</div>
+						<button type="submit" class="btn btn-default">提交</button>
+					</form>
+				</div>
+				<div class="col-md-12">
+					<h3>定时任务</h3>
+					<!-- 启动定时任务按钮 -->
+					<button id="startschedulerBtn" class="btn btn-success" disabled="disabled">Start Scheduler</button>
+					
+					<!-- 关闭定时任务按钮 -->
+					<button id="stopschedulerBtn" class="btn btn-danger" disabled="disabled">Stop Scheduler</button>
+
+					<form id="para_submit" action="{{ url_for('admin.edit_para') }}" method="post">
+						<div class="form-group">
+							<br>
+							<label for="status">当前状态信息</label>
+							<div class="alert alert-info" role="alert">
+								<span id="task-info"></span>
+								<span class="alert-link">轮询信息：</span>
+								<br>
+								{% for i in scheduler_config.snmp_data%}
+								<span class="alert-link">设备：{{ i.snmp_host }}  团体字：{{ i.snmp_community }}</span>
+								<br>
+								{% endfor %}
+							  </div>
+							</div>
+						<div class="form-group">
+						<label for="interval_setting">设定snmp轮询ARP表间隔(单位：秒)</label>
+						<input type="text" class="form-control" name="job_seconds" id="job_seconds" placeholder={{ scheduler_config.seconds }} disabled>
+						</div>
+						<div class="form-group">
+						<label for="interval_setting">设定snmp轮询团体字(snmpv2 only)</label>
+						<input type="text" class="form-control" name="snmp_community" id="snmp_community" placeholder='添加轮询snmp团体字' disabled>
+						</div>
+						<div class="form-group">
+						<label for="interval_setting">设定snmp轮询主机</label>
+						<input type="text" class="form-control" name="snmp_host" id="snmp_host" placeholder='添加轮询主机IP地址' disabled>
+						</div>
+						<button type="submit" class="btn btn-default" disabled="disabled">保存</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+
+		
+{% endblock %}
+{% block js %}
+$(function() {
+	// 分组修改表单提交处理
+	$('#group_submit').submit(function(event) {
+		event.preventDefault();
+		$.post($(this).attr('action'), $(this).serialize(), function(response) {
+			if (response.status_code == 2001) {
+				//alert('操作成功！' + response.message);
+				swal("Success", response.message + '  Closing in 3 seconds.', "success");
+				//3秒后自动关闭提示信息
+				setTimeout(swal.close, 3000);
+			} else {
+				swal("Error!", response.message, "error")
+			}
+		});
+	});
+
+
+	// 参数修改表单提交处理
+	$('#para_submit').submit(function(event) {
+		event.preventDefault();
+		$.post($(this).attr('action'), $(this).serialize(), function(response) {
+			if (response.status_code == 2001) {
+				alert('操作成功！');
+			} else {
+				alert('操作失败：' + response.message);
+			}
+		});
+	});
+});
+
+
+// 发送 GET 请求获取任务列表数据
+function loadTasks() {
+	fetch('/admin/tasks')
+	  .then(response => response.json())
+	  .then(data => {
+		// 清空原有内容
+		const taskInfoElement = document.querySelector('#task-info');
+		taskInfoElement.innerHTML = '';
+  
+		// 遍历任务数据并生成 HTML 元素
+		data.forEach(task => {
+		  const taskNameElement = document.createElement('span');
+		  taskNameElement.className = 'alert-link';
+		  taskNameElement.textContent = '任务名称：' + task.name;
+  
+		  const nextPollTimeElement = document.createElement('span');
+		  nextPollTimeElement.className = 'alert-link';
+		  nextPollTimeElement.textContent = '下一次运行时间：' + task.next_run_time;
+  
+		  const brElement = document.createElement('br');
+  
+		  taskInfoElement.appendChild(taskNameElement);
+		  taskInfoElement.appendChild(brElement);
+		  taskInfoElement.appendChild(nextPollTimeElement);
+		  taskInfoElement.appendChild(brElement.cloneNode());
+		  taskInfoElement.appendChild(brElement.cloneNode());
+		});
+	  })
+	  .catch(error => console.error(error));
+  }
+  
+  // 页面加载完成后调用 loadTasks 函数获取任务列表数据
+  window.onload = loadTasks;
+
+// 启动定时任务
+$(document).ready(function() {
+	$("#startschedulerBtn").click(function() {
+	  $.ajax({
+		type: "POST",
+		url: "/admin/start_scheduler",  // 后端处理路由
+		success: function(response) {
+		  swal("INFO", response, "info");  // 处理成功，弹窗显示成功信息
+		},
+		error: function(error) {
+		  swal("Error", error.responseText, "error");  // 处理失败，弹窗显示错误信息
+		}
+	  });
+	});
+  });
+
+// 停止定时任务
+$(document).ready(function() {
+	$("#stopschedulerBtn").click(function() {
+	  $.ajax({
+		type: "POST",
+		url: "/admin/stop_scheduler",  // 后端处理路由
+		success: function(response) {
+		  swal("INFO", response, "info");  // 处理成功，弹窗显示成功信息
+		},
+		error: function(error) {
+		  swal("Error", error.responseText, "error");  // 处理失败，弹窗显示错误信息
+		}
+	  });
+	});
+  });
+  
+</script>
+{% endblock js %}
