@@ -1,0 +1,396 @@
+{% block css %}
+<!-- sweetalert -->
+<link rel="stylesheet" href="{{ url_for('static', filename='sweetalert/sweetalert.css') }}">
+<script src="{{ url_for('static', filename='sweetalert/sweetalert.min.js') }}"></script>
+<!-- DataTables-1.12.1 -->
+<script type="text/javascript" src="{{ url_for('static', filename='jQuery-3.6.0/jquery-3.6.0.min.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='DataTables-1.12.1/css/jquery.dataTables.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='DataTables-1.12.1/css/dataTables.bootstrap.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='DataTables-1.12.1/js/jquery.dataTables.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='DataTables-1.12.1/js/dataTables.bootstrap.js') }}"></script>
+<!-- DataTables-1.12.1 Extended Plugs -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='Buttons-2.2.3/css/buttons.dataTables.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='Buttons-2.2.3/js/dataTables.buttons.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='Buttons-2.2.3/js/buttons.bootstrap.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='Buttons-2.2.3/js/buttons.html5.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='JSZip-2.5.0/jszip.js') }}"></script>
+<!-- Bootstrap-3.3.7 jQuery-3.6.0 -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='Bootstrap-3.3.7/css/bootstrap.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='Bootstrap-3.3.7/js/bootstrap.js') }}"></script>
+<!-- DataTables-1.12.1 RowGroup Plugin -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='RowGroup-1.4.0/css/rowGroup.dataTables.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='RowGroup-1.4.0/js/dataTables.rowGroup.js') }}"></script>
+<!-- moment.min.js -->
+<script type="text/javascript" src="{{ url_for('static', filename='js/moment.min.js') }}"></script>
+{% endblock %}
+{% block container %}
+<div id="iframe_home" class="iframe cur" style="padding-top: 10px;">
+	<!-- dataTables 表格 -->
+	<table id="ip_table" class="display" cellspacing="0" width="100%"></table>
+	<div class="modal fade" id="addModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			  <h4 class="modal-title">添加</h4>
+			</div>
+			<div class="modal-body">
+				<form id="addForm">
+					<div class="form-group">
+						<label for="add_ip">IP地址</label>
+						<div class="form-inline">
+							<label class="sr-only" for="add_ip"></label>
+							<input type="text" class="form-control" id="add_ip" placeholder="IP地址">
+							<label for="add_mask">/</label>
+							<input type="text" class="form-control" id="add_mask" placeholder="填0-32或255.255.255.x">
+						</div>							  
+					</div>
+					<div class="form-group">
+						<label for="add_mac_add">MAC地址</label>
+						<input type="text" class="form-control" id="add_mac_add" placeholder="格式:1111-2222-3333">
+					</div>
+					<div class="form-group">
+						<label for="add_network">网段</label>
+						<input type="text" class="form-control" id="add_network" placeholder="无需填写，自动判断" disabled>
+					</div>
+					<div class="form-group">
+						<label for="add_group_name">分组</label>
+						<input type="text" class="form-control" id="add_group_name" placeholder="不填写属于默认组，不存在则创建新的分组">
+					</div>
+					<div class="form-group">
+						<label for="add_desc">描述</label>
+						<input type="text" class="form-control" id="add_desc" placeholder="">
+					</div>
+					<div class="form-group">
+						<label for="add_user">使用人</label>
+						<input type="text" class="form-control" id="add_user" placeholder="">
+					</div>
+					<div class="form-group">
+						<label for="add_available">在线状态</label>
+						<input type="text" class="form-control" id="add_available" placeholder="无需填写，后台自动探测" disabled>
+					</div>
+				</form>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+					<button type="button" class="btn btn-primary" id="btnConfirmAdd">确定</button>
+				</div>
+			</div>
+		  </div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	  </div><!-- /.modal -->
+	</div>
+
+	<div class="modal fade" id="editModal" tabindex="-1" role="dialog">
+		<div class="modal-dialog" role="document">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			  <h4 class="modal-title">编辑</h4>
+			</div>
+			<div class="modal-body">
+			  <form id="editForm">
+				<div class="form-group">
+					<label for="edit_ip">IP地址</label>
+					<div class="form-inline">
+						<label class="sr-only" for="edit_ip"></label>
+						<input type="text" class="form-control" id="edit_ip" name="ip" placeholder="IP地址">
+						<label for="edit_mask">/</label>
+						<input type="text" class="form-control" id="edit_mask" name="mask" placeholder="填0-32或255.255.255.x">
+					</div>	
+				</div>
+				<div class="form-group">
+				  <label for="edit_mac_add">MAC地址</label>
+				  <input type="text" class="form-control" id="edit_mac_add" name="mac_add" placeholder="格式:1111-2222-3333">
+				</div>
+				<div class="form-group">
+				  <label for="edit_network">网段</label>
+				  <input type="text" class="form-control" id="edit_network" name="network" placeholder="无需填写，自动判断" disabled>
+				</div>
+				<div class="form-group">
+				  <label for="edit_group_name">分组</label>
+				  <input type="text" class="form-control" id="edit_group_name" name="group_name" placeholder="不填写属于默认组，不存在则创建新的分组">
+				</div>
+				<div class="form-group">
+				  <label for="edit_desc">描述</label>
+				  <input type="text" class="form-control" id="edit_desc" name="desc" placeholder="">
+				</div>
+				<div class="form-group">
+				  <label for="edit_user">使用人</label>
+				  <input type="text" class="form-control" id="edit_user" name="user" placeholder="">
+				</div>
+				<input type="hidden" id="id" name="id">
+			  </form>
+			</div>
+			<div class="modal-footer">
+			  <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+			  <button type="button" class="btn btn-primary" id="editConfirmBtn">保存更改</button>
+			</div>
+		  </div>
+		</div>
+	</div> 
+
+	<script>
+
+		// 编辑行数据--给DataTable编辑按钮的调用函数
+		var row_edit = function() {
+			var selectedRowsData = table.rows('.selected').data();
+			if (selectedRowsData.length === 1) {
+				var row = selectedRowsData[0];
+				// 根据你的需求，执行编辑操作
+				//在此处完成弹出模态框渲染数据行和填写数据提交功能
+				editRowData(row);
+			} else {
+				swal("No row selected or more selected!", "Please select one row only.", "warning");
+			}
+		};
+
+		// 编辑行数据--数据行渲染到表单输入框
+		var editRowData = function(row) {
+			$('#edit_ip').val(row.ip);
+			$('#edit_mask').val(row.mask);
+			$('#edit_mac_add').val(row.mac_add);
+			// $('#edit_network').val(row.network);
+			$('#edit_group_name').val(row.group_name);
+			$('#edit_desc').val(row.desc);
+			$('#edit_user').val(row.user);
+			$('#id').val(row.id);
+			$('#editModal').modal('show');
+		};
+		
+		// 编辑行数据--点击“保持更改”按钮
+		$('#editConfirmBtn').on('click', function() {
+			var formData = {};
+			$('#editForm').serializeArray().forEach(function(item) {
+				formData[item.name] = item.value;
+			});
+
+			$.ajax({
+				url: '/admin/edit',
+				method: 'POST',
+				contentType: 'application/json',
+				data: JSON.stringify(formData),
+				success: function(result) {
+					if (result.status_code == 2001) {
+						// 更新成功的处理逻辑...
+						swal("Row update was successful!", result.message + '  Closing in 3 seconds.', "success");
+						//3秒后自动关闭提示信息
+						setTimeout(swal.close, 3000)
+						// 隐藏模态框
+						$('#editModal').modal('hide');
+						table.ajax.reload();
+						} else {
+						// 添加失败的处理逻辑...
+						swal("Failed to update data!", result.message, "warning");
+						}
+				},
+				error: function(xhr, status, error) {
+					swal("Error editing data!", error, "error");
+				}
+			});
+		});
+
+		// 添加数据行--给DataTable添加按钮的调用函数
+		var row_add = function() {
+			// 添加数据行--弹出模态框
+			$('#addModal').modal('show');
+			// 添加数据行--解除之前绑定的点击事件
+			$('#btnConfirmAdd').off('click');
+
+			// 添加数据行--点击“确认”按钮
+			$('#btnConfirmAdd').click(function(event) {
+				event.preventDefault();
+				var data = {};
+				// 获取表单值
+				data.ip = $('#add_ip').val();
+				data.mask = $('#add_mask').val();
+				data.mac_add = $('#add_mac_add').val();
+				data.network = $('#add_network').val();
+				data.group_name = $('#add_group_name').val();
+				data.desc = $('#add_desc').val();
+				data.user = $('#add_user').val();
+				data.available = $('#add_available').val();
+
+				// 向服务器发送请求
+				$.ajax({
+				url: '/admin/add',
+				type: 'POST',
+				dataType: 'json',
+				data: JSON.stringify(data),
+				contentType: 'application/json;charset=UTF-8',
+				success: function(result) {
+					if (result.status_code == 2001) {
+					// 添加成功的处理逻辑...
+					swal("Success", result.message + '  Closing in 3 seconds.', "success");
+					//3秒后自动关闭提示信息
+					setTimeout(swal.close, 3000)
+					// 隐藏模态框
+					$('#addModal').modal('hide');
+					// 清空表单值
+					$('#addForm')[0].reset();
+					} else {
+					// 添加失败的处理逻辑...
+					swal("Failed to add data!", result.message, "warning");
+					}
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					// 错误处理逻辑...
+					swal("Error adding data!", errorThrown, "error");
+				}
+				});
+			});
+		};
+
+		// 删除选中行--给DataTable删除按钮的调用函数
+		var row_delete = function() {
+			var selectedRowsData = table.rows('.selected').data();
+			var id_list = []; // 存储选中行的 ID
+		
+			selectedRowsData.each(function (row) {
+			var id = parseInt(row.id); // 假设选中行的 ID 存储在 row 对象的 id 属性中，强制转换int类型
+			id_list.push(id); // 将选中行的 ID 存入 id_list 数组中
+			});
+		
+			if (id_list.length === 0) { // 如果未选择任何行，则提示用户进行选择
+			swal("No row selected!", "Please select at least one row.", "warning");
+			return;
+			}
+		
+			// 删除选中行--弹出 SweetAlert 确认弹窗
+			swal({
+			title: "Are you sure?",
+			text: "Your will not be able to recover that!",
+			type: "warning",
+			showCancelButton: true,  // 是否显示取消按钮
+			confirmButtonClass: "btn-danger",  // 确认按钮的样式类
+			confirmButtonText: "Yes, delete it!",  // 确认按钮文本
+			cancelButtonText: "Cancel",  // 取消按钮文本
+			closeOnConfirm: false,  // 点击确认按钮不关闭弹框
+			showLoaderOnConfirm: true  // 显示正在删除的动画效果
+			},
+			function(){
+			$.ajax({
+				url: "/admin/delete",
+				type: "post",
+				data: JSON.stringify({ ids: id_list }), // 将选中行的 ID 以 JSON 格式发送到后台
+				contentType: 'application/json',
+				success: function (data) {
+				if (data.status_code === 2001) {
+					swal("Deleted!", "Data has been deleted." + '  Closing in 3 seconds.', "success");
+					//3秒后自动关闭提示信息
+					setTimeout(swal.close, 3000)
+					table.ajax.reload();
+					//ajax.reload();
+				} else {
+					swal("Error!", "An error occurred.", "error")
+				}
+				}
+			})
+			});
+		};	
+
+		// 定义一个当前时间变量用于文件名命名
+		var nowTime=moment().format("YYYY-MM-DD_HH-mm"); // 获取当前时间
+		
+		// DataTable初始化
+		$(document).ready(function () {
+			table = $("#ip_table").DataTable({
+			//"paging": false, //关闭分页，自带的左上角每页显示数量和底部分页器会消失
+			pageLength: 15, //每页显示512条数据
+			//bPaginate: false, //分页总开关 ， 左上角每页数量和右下角分页器小时
+			//select: true,
+			//info: false, // 关闭左下角信息显示
+			dom: "Bfrtip",
+			ajax: {
+				url: "/admin/ipshow_data",
+				type: "GET",
+				dataType: "json",
+				cache: false, // 禁用缓存
+			},
+			buttons: [
+				{
+				text: "添加",
+				action: row_add,
+				},
+				{
+				text: "编辑选中行",
+				action: row_edit,
+				},
+				{
+				text: "删除选中行",
+				action: row_delete,
+				},
+				{
+				extend: "excel",
+				title: "数据导出-" + nowTime,
+				text: "导出",
+				filename: "IP地址使用情况表_" + nowTime, //导出文件格式：IP地址使用情况表_2022-09-29_16-48.xlsx
+				exportOptions: {
+					columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], //设置导出列的索引
+				},
+				},
+				{
+				text: "刷新",
+				action: function (e, dt, node, config) {
+					dt.ajax.reload();
+				},
+				},
+			],
+			columns: [
+				{ 
+					title: "编号", 
+					data: null,
+					"render": function (data, type, row, meta) {
+						return meta.row + 1; // 序号从1开始
+					}
+				},
+				{ title: "ID", data: "id" },
+				{ title: "IP地址", data: "ip" },
+				{ title: "子网掩码", data: "mask" },
+				{ title: "MAC地址", data: "mac_add" },
+				{ title: "网络", data: "network" },
+				{ title: "组别", data: "group_name" },
+				{ title: "描述", data: "desc" },
+				{ title: "用户", data: "user" },
+				{
+				title: "在线状态",
+				data: null,
+				render: function (data, type, row) {
+					if (row.available) {
+					return "<span class='label label-success'>在线</span>";
+					} else {
+					return "<span class='label label-warning'>离线</span>";
+					}
+				},
+				},
+				{
+				title: "创建时间",
+				data: "created_at",
+				render: function (data, type, row) {
+					var datetime = moment.utc(data).local();
+					return type === "display" || type === "filter"
+					? datetime.format("YYYY-MM-DD HH:mm:ss") // 用于渲染在单元格
+					: data; // 用于被搜索
+				},
+				},
+				{
+				title: "更新时间",
+				data: "updated_at",
+				render: function (data, type, row) {
+					var datetime = moment.utc(data).local();
+					return type === "display" || type === "filter"
+					? datetime.format("YYYY-MM-DD HH:mm:ss") // 用于渲染在单元格
+					: data; // 用于被搜索
+				},
+				},
+			],
+			columnDefs: [{ visible: false, targets: [1] }], // 隐藏第三列
+			});
+		
+			//数据行的选中
+			$("#ip_table").on("click", "tbody tr", function () {
+			$(this).toggleClass("selected");
+			});
+		});
+	</script>
+</div>
+{% endblock %}

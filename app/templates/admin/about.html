@@ -1,0 +1,67 @@
+{% block container %}
+	<div class="content_main">
+		<div id="iframe_home" class="iframe cur">
+			{% block css %}
+			<style type="text/css">
+
+				*{
+					margin: 0;
+					padding: 0;
+					list-style: none;
+					font-family: 'Noto Sans TC', sans-serif;
+			
+				}
+
+				.wrap9{
+					margin: 220px 30px;
+					background-color: #000;
+				}
+				.container9{
+					width: 1300px;
+					margin: auto;
+					text-align: center;
+				}
+				.container9 h1{
+					width:70%;
+					display: inline-block;
+					margin-top: 50px;
+					box-sizing: border-box;
+					font-size: 80px;
+					background-color: #a00;
+					color: #fff;
+					margin-bottom: 0.5em;
+				   
+				}
+			
+				.container9 .txt{
+					flex-shrink: 0;
+					box-sizing: border-box;
+					color: #fff;
+				}
+				.container9 .txt P{
+					display: inline-block;
+					margin-bottom: 30px;
+					font-size: 26px;
+					padding: 0 80px;
+				}
+				.container9 .txt p:first-child:first-letter{
+					font-size: 40px;
+				}
+				</style>
+			{% endblock %}
+			<body bgcolor="black">
+    
+				<div class="wrap9">
+					<div class="container9">
+						<h1>DAMAAGE WARNING</h1>
+						<div class="txt">
+							<p>Your time is limited, so don't waste it living someone else's life. Don't be trapped by dogma - which is living with the results of other people's thinking. Don't let the noise of other's opinions drown out your own inner voice. And most important, have the courage to follow your heart and intuition. They somehow already know what you truly want to become. Everything else is secondary.</p>
+						</div>
+					</div>
+				</div>
+			
+			</body>
+			
+		</div>
+	</div>
+{% endblock %}
