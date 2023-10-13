@@ -8,6 +8,8 @@
 
 数据库：SQLite
 
+预览截图：https://kiraster.github.io/gallery/IPA_VIEW_v0.1_Beta/
+
 ### 内置功能
 
 - 首页：*没有首页的首页* 
