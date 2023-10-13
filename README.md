@@ -8,8 +8,6 @@
 
 数据库：SQLite
 
-预览截图：https://kiraster.github.io/gallery/IPA_VIEW_v0.1_Beta/
-
 ### 内置功能
 
 - 首页：*没有首页的首页* 
@@ -155,6 +153,8 @@ flask run
 ```
 
 ### 预览
+
+预览截图：https://kiraster.github.io/gallery/IPA_VIEW_v0.1_Beta/
 
 ![ScreenCaputure231012233137](https://s2.loli.net/2023/10/12/D4mpPBsOhouYZL2.jpg)
 
