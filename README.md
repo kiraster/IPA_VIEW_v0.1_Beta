@@ -1,6 +1,10 @@
-## 项目简介
+# 一、项目简介
 
 一个使用 Flask 框架组装的IP地址管理平台，很简陋
+
+在配置文件`/app/config.py` 配置好指定交换机的snmp v2c 只读团体名称后，可以定时轮询指定交换机的arp数据，将获得的ip、mac地址及轮询时间写进数据库；下一次没有轮询到的已知ip会被设置为离线状态
+
+这样就可以拿到一份准确的局域网设备数据（包括曾短暂上线后被轮询到但之后离线的）
 
 前端：Bootstrap、Datatable、sweetalert……
 
@@ -8,16 +12,16 @@
 
 数据库：SQLite
 
-### 内置功能
-
+# 二、内置功能	
 - 首页：*没有首页的首页* 
 - IP地址表：显示IP地址使用情况，可在页面进行增、删、改、导出到Excel表格
 -  分组：按分组 + 网段显示目录树，右侧显示所选择查看网段的饼图，方块表和网段IP地址表
--  设置：查看定时任务执行情况和轮询参数
--  数据库：404
+-  设置：查看定时任务执行情况和轮询参数；将ip子网添加到指定分组
+-  数据库：无功能，被定向到404
 -  关于：一段话
 
-### 项目结构
+
+# 三、项目结构
 
 ```
 |   app.py  # 没什么用装个样子
@@ -59,9 +63,9 @@
 
 ```
 
-## 安装使用
+# 四、安装使用
 
-### 下载
+## 4.1 下载源码备用
 
 ```
 # git
@@ -71,22 +75,30 @@ git clone https://github.com/kiraster/IPA_VIEW_v0.1_Beta.git
 https://github.com/kiraster/IPA_VIEW_v0.1_Beta  ->>  Code  –>> Download ZIP
 ```
 
-### 虚拟环境
-
+## 4.2 安装python并配置虚拟环境
+经过热心群众测试python3.12运行本代码有错误，使用python3.10可以完美规避安装环境报错问题
 ```
+# 使用venv
 # 创建虚拟环境
 python -m venv venv
-# 进入虚拟环境
+#  进入虚拟环境
 .\venv\Scripts\activate
+
+# 使用miniconda3
+# 可以miniconda安装python，使用介绍见作者博客https://kiraster.github.io/posts/f2cfb11.html
+# 创建一个虚拟环境（指定Python版本3.10）
+conda create -n ipa_base python=3.10
+# 激活虚拟环境
+conda activate ipa_base
 ```
 
-### 修改配置
+## 4.3 修改配置
 
 ```
 # 定义flask代码中的配置项
 class FlaskConfig:
     HOST = '127.0.0.1'  # 设置主机地址，'0.0.0.0' 表示监听所有可用的网络接口
-    PORT = 80  # 设置端口号，一般情况下使用默认的 5000 端口
+    PORT = 80  # 设置端口号，使用python manage.py启动时用的；如果用flask run启动是使用5000 端口
     # 开启调试模式
     DEBUG = True
     # 数据库连接URI
@@ -100,27 +112,29 @@ class FlaskConfig:
 
 
 # APScheduler配置参数
+# job1 和 job2 时间建议从30改为300
 class APSchedulerConfig:
     # 开启API查询接口
     SCHEDULER_API_ENABLED = True
     job1_name = '定时轮询ARP表'
     job2_name = '定时更新没有轮询到ARP表项的IP地址状态'
-    job1_seconds = 30
-    job2_seconds = 30
+    job1_seconds = 300
+    job2_seconds = 300
     # 最大定时任务实例数
+    # 此数值是指“比如说你网络卡了30分钟以上，而前一次轮询没有完成，就会堆积到2次轮询任务，大概就是这么个意思”
     SCHEDULER_MAX_INSTANCES = 66
 
 
 class SNMPConfig:
-    # 当超过30分钟没有updated_at值更新，则available值置为False
-    REFRESH_TIME = 1
+    # 当超过30分钟没有updated_at值更新，则available值置为False；单位：分钟
+    REFRESH_TIME = 30
     SNMP_DATA = [
         {'snmp_host': '192.168.56.10', 'snmp_community': 'public'},
         {'snmp_host': '192.168.56.20', 'snmp_community': 'xswl_public'},
     ]
 ```
 
-### 安装库
+## 4.4 安装库
 
 ```
 pip install -r requirements.txt
@@ -128,7 +142,7 @@ pip install -r requirements.txt
 pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/  -r requirements.txt
 ```
 
-### 运行项目
+## 4.5 运行
 
 ```
 # 创建当前版本的数据迁移脚本
@@ -143,16 +157,24 @@ flask db upgrade
 flask insert group
 Name [default]: 
 
-# 可选，导入测试数据
+# [可选]，导入测试数据，如果可以抓到snmp数据不要导入，不然还要逐行删除
  python .\app\test_data.py
 
 # 启动应用
+注意2种方式访问端口不一样
 python manage.py
 或
-flask run
+flask run（建议用此方式）
 ```
+# 五、设置
+## 5.1 ip子网手动分组
+网页前端设置选项那里可以手动将ip子网（类似192.168.1.0/24）创建到新的分组里，支持中文，同时该子网在默认分组里会自动去掉，只显示你创建的分组里。
+## 5.2 关于删除不生效
+需要手动刷新网页
 
-### 预览
+## 5.3 预览
+
+浏览器地址栏输入：127.0.0.1/admin/ ，或者  127.0.0.1[:port]/admin/
 
 预览截图：https://kiraster.github.io/gallery/IPA_VIEW_v0.1_Beta/
 
@@ -194,7 +216,9 @@ flask run
 
 ![ScreenCaputure231012234122](https://s2.loli.net/2023/10/13/lAZ6hC2DcRerMEm.jpg)
 
-## 感谢
+---
+
+# 感谢
 
 就像开头说的，我只是组装了一个东西，代码中用到了很多开源的代码，感谢以下
 
