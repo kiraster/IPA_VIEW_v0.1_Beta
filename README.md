@@ -98,7 +98,7 @@ conda activate ipa_base
 # 定义flask代码中的配置项
 class FlaskConfig:
     HOST = '127.0.0.1'  # 设置主机地址，'0.0.0.0' 表示监听所有可用的网络接口
-    PORT = 80  # 设置端口号，使用python manage.py启动时用的；如果用flask run启动是使用5000 端口
+    PORT = 80  # 设置端口号，此处设置仅python manage.py启动有效；flask run模式参考4.5
     # 开启调试模式
     DEBUG = True
     # 数据库连接URI
@@ -161,11 +161,20 @@ Name [default]:
  python .\app\test_data.py
 
 # 启动应用
-注意2种方式访问端口不一样
+# 注意2种方式访问端口不一样
 python manage.py
-或
+# 相关配置在class FlaskConfig中
+# 或第二种办法
 flask run（建议用此方式）
+# 此模式启动仅支持在本机使用固定地址http://127.0.0.1:5000/admin访问，即使修改config.py中相应参数也无效。
+# 若想修改默认5000端口并运行通过ip:端口方式访问，请以下面命令运行，并注意放行相关防火墙端口。
+flask run -h 0.0.0.0 -p 8080
+# -h 后为要监听的网络接口地址，'0.0.0.0' 表示监听所有可用的网络接口
+# -p 后数字为要修改的服务端口
+
 ```
+![e2d52aace85db2aedcfd7d6557be964](https://github.com/bg4vrg/IPA_VIEW_v0.1_Beta/assets/19301725/c3056066-d551-4917-b2aa-e8c5eb4cc019)
+
 # 五、设置
 ## 5.1 ip子网手动分组
 网页前端设置选项那里可以手动将ip子网（类似192.168.1.0/24）创建到新的分组里，支持中文，同时该子网在默认分组里会自动去掉，只显示你创建的分组里。
@@ -176,7 +185,79 @@ flask run（建议用此方式）
 
 浏览器地址栏输入：127.0.0.1/admin/ ，或者  127.0.0.1[:port]/admin/
 
-预览截图：https://kiraster.github.io/gallery/IPA_VIEW_v0.1_Beta/
+## 5.4 批处理文件自启动
+为了最大限度解放打工人，需要做到一键运行乃至开机即启动。
+### 5.4.1 准备批处理运行环境
+找到AnacondaPrompt(miniconda3)图标，查看图标属性并复制目标栏内内容备用
+
+![015c9efcd2ec7badcb037c62ba3d9ad](https://github.com/bg4vrg/IPA_VIEW_v0.1_Beta/assets/19301725/eb3ff29d-01b4-47fb-8a0b-79bea2b4dd5e)
+
+
+`
+%windir%\System32\cmd.exe "/K" C:\miniconda3\Scripts\activate.bat C:\miniconda3
+`
+
+复制"/K"后面的内容,不要照抄，安装路径都不一定相同
+
+`
+C:\miniconda3\Scripts\activate.bat C:\miniconda3
+`
+
+### 5.4.2 批处理内容
+为了调用miniconda3，需要在命令前加call，完整批处理内容如下，保存为bat文件即可。
+
+```
+@echo off
+call C:\miniconda3\Scripts\activate.bat C:\miniconda3
+call activate ipa_base
+cd /d C:\ipa_VIEW
+call python manage.py
+cmd /k
+```
+<b>仅供参考</b>
+
+注意：
+C:\ipa_VIEW是我程序解压的位置
+
+cmd /k是为了不关闭cmd窗口
+
+
+
+运行效果如下图
+
+![37780c3218ee534681142bb8e0c8035](https://github.com/bg4vrg/IPA_VIEW_v0.1_Beta/assets/19301725/317b67c8-dadd-42f0-94c2-522b8a4c574c)
+
+## 5.5 对网页进行简单加密
+
+比较简陋，明文密码，实测F12看不到，凑合用下。
+将以下代码插入到IPA_VIEW\app\templates\admin下的index.html里面，然后修改下你要设置的密码。
+
+```
+<SCRIPT language=JavaScript> 
+function password() { 
+var testV = 1; 
+var pass1 = prompt('请输入密码:',''); 
+while (testV < 3) { 
+if (!pass1) 
+history.go(-1); 
+if (pass1 == "这里输入你想设置的密码") { 
+alert('密码正确!'); 
+break; 
+} 
+testV+=-1; 
+var pass1 = prompt('密码错误!请重新输入:'); 
+} 
+if (pass1!="password" & testV ==3) 
+history.go(-1); 
+return " "; 
+} 
+document.write(password()); 
+</SCRIPT>
+```
+
+# 六、预览截图
+
+https://kiraster.github.io/gallery/IPA_VIEW_v0.1_Beta/
 
 ![ScreenCaputure231012233137](https://s2.loli.net/2023/10/12/D4mpPBsOhouYZL2.jpg)
 
