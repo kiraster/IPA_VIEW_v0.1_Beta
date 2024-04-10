@@ -210,7 +210,7 @@ C:\miniconda3\Scripts\activate.bat C:\miniconda3
 @echo off
 call C:\miniconda3\Scripts\activate.bat C:\miniconda3
 call activate ipa_base
-cd C:\ipa_VIEW
+cd /d C:\ipa_VIEW
 call python manage.py
 cmd /k
 ```
@@ -221,11 +221,39 @@ C:\ipa_VIEW是我程序解压的位置
 
 cmd /k是为了不关闭cmd窗口
 
+
+
 运行效果如下图
 
 ![37780c3218ee534681142bb8e0c8035](https://github.com/bg4vrg/IPA_VIEW_v0.1_Beta/assets/19301725/317b67c8-dadd-42f0-94c2-522b8a4c574c)
 
+## 5.5 对网页进行简单加密
 
+比较简陋，明文密码，实测F12看不到，凑合用下。
+将以下代码插入到IPA_VIEW\app\templates\admin下的index.html里面，然后修改下你要设置的密码。
+
+```
+<SCRIPT language=JavaScript> 
+function password() { 
+var testV = 1; 
+var pass1 = prompt('请输入密码:',''); 
+while (testV < 3) { 
+if (!pass1) 
+history.go(-1); 
+if (pass1 == "这里输入你想设置的密码") { 
+alert('密码正确!'); 
+break; 
+} 
+testV+=-1; 
+var pass1 = prompt('密码错误!请重新输入:'); 
+} 
+if (pass1!="password" & testV ==3) 
+history.go(-1); 
+return " "; 
+} 
+document.write(password()); 
+</SCRIPT>
+```
 
 # 六、预览截图
 
