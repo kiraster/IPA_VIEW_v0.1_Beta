@@ -10,7 +10,25 @@ class FlaskConfig:
     # 开启调试模式
     DEBUG = True
     # 数据库连接URI
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite3'
+    # SQLALCHEMY_DATABASE_URI = 'sqlite:///db.sqlite3'
+
+    # 添加MySQL数据库连接
+    # MySQL所在主机名
+    HOSTNAME = "127.0.0.1"
+    # MySQL监听的端口号，默认3306
+    MYSQL_PORT = "3306"
+    # 连接MySQL的用户名
+    USERNAME = "root"
+    # 连接MySQL的密码
+    PASSWORD = "12345678"
+    # PASSWORD = quote(PASSWORD, safe='')
+    # MySQL上创建的数据库名称
+    DATABASE = "ipa"
+    # 修改以下URL，对应你的MySQL数据库路径
+    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{MYSQL_PORT}/{DATABASE}"
+    # SQLALCHEMY_DATABASE_URI = 'mysql://root:12345678@#@127.0.0.1:3306/ipa'
+    # url = 'mysql+pymysql://root:12345678@127.0.0.1:3306/ipa'
+
     # SQLALCHEMY_TRACK_MODIFICATIONS当设置为True时，SQLAlchemy会在对数据库进行修改操作（如添加、更新、删除记录）后发出信号，
     # 以便其他组件（如Flask-Migrate）能够捕获这些变化并生成相应的数据库迁移脚本。
     SQLALCHEMY_TRACK_MODIFICATIONS = False
