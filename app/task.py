@@ -115,7 +115,18 @@ def add_data(data):
                 else:
                     # 计算网段信息的值，不能获取IP地址的掩码默认24位
                     network = get_network_info(ip, '255.255.255.0')
-                    new_data = IPTable(ip=ip, mask='255.255.255.0', mac_add=mac_add, network=network, available=True, ip_group_id=1)
+                    # 查询network网段是否已存在于数据库中
+                    existing_network_record = IPTable.query.filter_by(network=network).first()
+                    # 根据查询结果决定逻辑分支
+                    if existing_network_record:
+                        # 如果网络已存在，则获取其所属的分组ID
+                        ip_group_id = existing_network_record.ip_group_id
+                    else:
+                        # 如果网络不存在，则准备创建新的网络记录，默认ip_group_id为1
+                        ip_group_id = 1
+                    # 创建新的IPTable记录
+                    new_data = IPTable(ip=ip, mask='255.255.255.0', mac_add=mac_add, network=network, available=True,
+                                       ip_group_id=ip_group_id)
                     db.session.add(new_data)
 
             db.session.commit()
